@@ -5,6 +5,7 @@ blueprint:
     Make sure that 'Elapsed' is enabled in the z2m advanced settings.
     Only single buttons are supported, not the combination of buttons.
     And the hold action is triggered as long as the button is held.
+    Version 1.0.1
   domain: automation
   input:
     switch_topic:
@@ -112,6 +113,15 @@ action:
       - platform: mqtt
         topic: "{{ switch_topic }}"
         payload: "release_1"
+      - platform: mqtt
+        topic: "{{ switch_topic }}"
+        payload: "release_2"
+      - platform: mqtt
+        topic: "{{ switch_topic }}"
+        payload: "release_3"
+      - platform: mqtt
+        topic: "{{ switch_topic }}"
+        payload: "release_4"
     timeout:
       milliseconds: "{{ hold_delay_ms }}"
     continue_on_timeout: true
