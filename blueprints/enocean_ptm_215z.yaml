@@ -1,16 +1,16 @@
 blueprint:
-  name: Controller - EnOcean PTM 215Z (Friends of Hue) switch
+  name: Controller - EnOcean PTM 215Z (Friends of Hue) switch based on Zigbee2MQTT v2.0 events
   description:
     Controller automation for executing press/hold/release after hold actions triggered by EnOcean PTM 215Z (Friends of Hue) switch.
     Make sure that 'Elapsed' is enabled in the z2m advanced settings.
     Only single buttons are supported, not the combination of buttons.
     And the hold action is triggered as long as the button is held.
-    Version 1.0.1
+    Version 2.0.0
   domain: automation
   input:
-    switch_topic:
-      name: (Zigbee2MQTT) MQTT topic of the switch action
-      description: Example topic "zigbee2mqtt/switch/kitchen/action", include the action part.
+    switch_event:
+      name: (Zigbee2MQTT) MQTT event type of the switch action
+      description: Example event.switch_kitchen_action.
       default: ""
     hold_delay_ms:
       name: Hold delay
@@ -89,39 +89,47 @@ variables:
   hold_delay_ms: !input "hold_delay_ms"
   tick_ms: !input "tick_ms"
 trigger_variables:
-  switch_topic: !input "switch_topic"
+  switch_event: !input "switch_event"
 trigger:
-  - platform: mqtt
-    topic: "{{ switch_topic }}"
-    payload: "press_1"
+  - trigger: state
+    entity_id: "{{ switch_event }}"
+    attribute: event_type
+    to: "press_1"
     id: button_1_press
-  - platform: mqtt
-    topic: "{{ switch_topic }}"
-    payload: "press_2"
+  - trigger: state
+    entity_id: "{{ switch_event }}"
+    attribute: event_type
+    to: "press_2"
     id: button_2_press
-  - platform: mqtt
-    topic: "{{ switch_topic }}"
-    payload: "press_3"
+  - trigger: state
+    entity_id: "{{ switch_event }}"
+    attribute: event_type
+    to: "press_3"
     id: button_3_press
-  - platform: mqtt
-    topic: "{{ switch_topic }}"
-    payload: "press_4"
+  - trigger: state
+    entity_id: "{{ switch_event }}"
+    attribute: event_type
+    to: "press_4"
     id: button_4_press
 action:
   # Wait briefly for a release; if it comes quickly => treat as short press
   - wait_for_trigger:
-      - platform: mqtt
-        topic: "{{ switch_topic }}"
-        payload: "release_1"
-      - platform: mqtt
-        topic: "{{ switch_topic }}"
-        payload: "release_2"
-      - platform: mqtt
-        topic: "{{ switch_topic }}"
-        payload: "release_3"
-      - platform: mqtt
-        topic: "{{ switch_topic }}"
-        payload: "release_4"
+      - trigger: state
+        entity_id: "{{ switch_event }}"
+        attribute: event_type
+        to: "release_1"
+      - trigger: state
+        entity_id: "{{ switch_event }}"
+        attribute: event_type
+        to: "release_2"
+      - trigger: state
+        entity_id: "{{ switch_event }}"
+        attribute: event_type
+        to: "release_3"
+      - trigger: state
+        entity_id: "{{ switch_event }}"
+        attribute: event_type
+        to: "release_4"
     timeout:
       milliseconds: "{{ hold_delay_ms }}"
     continue_on_timeout: true
@@ -174,18 +182,22 @@ action:
                   sequence: !input "button_4_held"
 
             - wait_for_trigger:
-                - platform: mqtt
-                  topic: "{{ switch_topic }}"
-                  payload: "release_1"
-                - platform: mqtt
-                  topic: "{{ switch_topic }}"
-                  payload: "release_2"
-                - platform: mqtt
-                  topic: "{{ switch_topic }}"
-                  payload: "release_3"
-                - platform: mqtt
-                  topic: "{{ switch_topic }}"
-                  payload: "release_4"
+                - trigger: state
+                  entity_id: "{{ switch_event }}"
+                  attribute: event_type
+                  to: "release_1"
+                - trigger: state
+                  entity_id: "{{ switch_event }}"
+                  attribute: event_type
+                  to: "release_2"
+                - trigger: state
+                  entity_id: "{{ switch_event }}"
+                  attribute: event_type
+                  to: "release_3"
+                - trigger: state
+                  entity_id: "{{ switch_event }}"
+                  attribute: event_type
+                  to: "release_4"
               timeout:
                 milliseconds: "{{ tick_ms }}"
               continue_on_timeout: true
