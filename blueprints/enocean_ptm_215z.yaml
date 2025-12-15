@@ -5,7 +5,7 @@ blueprint:
     Make sure that 'Elapsed' is enabled in the z2m advanced settings.
     Only single buttons are supported, not the combination of buttons.
     And the hold action is triggered as long as the button is held.
-    Version 2.0.2
+    Version 2.0.3
   domain: automation
   input:
     switch_event:
@@ -94,22 +94,22 @@ trigger_variables:
   switch_event: !input "switch_event"
 trigger:
   - trigger: state
-    entity_id: "{{ switch_event }}"
+    entity_id: "{{ switch_event.entity_id }}"
     attribute: event_type
     to: "press_1"
     id: button_1_press
   - trigger: state
-    entity_id: "{{ switch_event }}"
+    entity_id: "{{ switch_event.entity_id }}"
     attribute: event_type
     to: "press_2"
     id: button_2_press
   - trigger: state
-    entity_id: "{{ switch_event }}"
+    entity_id: "{{ switch_event.entity_id }}"
     attribute: event_type
     to: "press_3"
     id: button_3_press
   - trigger: state
-    entity_id: "{{ switch_event }}"
+    entity_id: "{{ switch_event.entity_id }}"
     attribute: event_type
     to: "press_4"
     id: button_4_press
@@ -117,19 +117,19 @@ action:
   # Wait briefly for a release; if it comes quickly => treat as short press
   - wait_for_trigger:
       - trigger: state
-        entity_id: "{{ switch_event }}"
+        entity_id: "{{ switch_event.entity_id }}"
         attribute: event_type
         to: "release_1"
       - trigger: state
-        entity_id: "{{ switch_event }}"
+        entity_id: "{{ switch_event.entity_id }}"
         attribute: event_type
         to: "release_2"
       - trigger: state
-        entity_id: "{{ switch_event }}"
+        entity_id: "{{ switch_event.entity_id }}"
         attribute: event_type
         to: "release_3"
       - trigger: state
-        entity_id: "{{ switch_event }}"
+        entity_id: "{{ switch_event.entity_id }}"
         attribute: event_type
         to: "release_4"
     timeout:
@@ -185,19 +185,19 @@ action:
 
             - wait_for_trigger:
                 - trigger: state
-                  entity_id: "{{ switch_event }}"
+                  entity_id: "{{ switch_event.entity_id }}"
                   attribute: event_type
                   to: "release_1"
                 - trigger: state
-                  entity_id: "{{ switch_event }}"
+                  entity_id: "{{ switch_event.entity_id }}"
                   attribute: event_type
                   to: "release_2"
                 - trigger: state
-                  entity_id: "{{ switch_event }}"
+                  entity_id: "{{ switch_event.entity_id }}"
                   attribute: event_type
                   to: "release_3"
                 - trigger: state
-                  entity_id: "{{ switch_event }}"
+                  entity_id: "{{ switch_event.entity_id }}"
                   attribute: event_type
                   to: "release_4"
               timeout:
