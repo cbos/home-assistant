@@ -2,7 +2,7 @@
 
 blueprint:
   name: "Motion-activated light between dusk/dawn with offset and blocker"
-  description: "Motion-activated light between dusk/dawn (with offsets) only if ambient LUX is low and if not switch off shortly before (version 1.0.0)"
+  description: "Motion-activated light between dusk/dawn (with offsets) only if ambient LUX is low and if not switch off shortly before (version 1.0.1)"
   domain: automation
 
   input:
@@ -11,7 +11,6 @@ blueprint:
       selector:
         entity:
           domain: binary_sensor
-          device_class: occupancy
 
     activation_blocker:
       name: Binary sensor which might block the activation of the light. It should be off to block the light activation
