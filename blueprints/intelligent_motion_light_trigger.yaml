@@ -2,7 +2,7 @@
 
 blueprint:
   name: "Motion-activated light between dusk/dawn with offset and blocker"
-  description: "Motion-activated light between dusk/dawn (with offsets) only if ambient LUX is low and if not switch off shortly before (version 1.0.1)"
+  description: "Motion-activated light between dusk/dawn (with offsets) only if ambient LUX is low and if not switch off shortly before (version 1.0.2)"
   domain: automation
 
   input:
@@ -84,7 +84,9 @@ condition:
 
   - condition: state
     entity_id: !input activation_blocker
-    state: "off"
+    state:
+    - "off"
+    - "unavailable"
 
 action:
   - service: light.turn_on
