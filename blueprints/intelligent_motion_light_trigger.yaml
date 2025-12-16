@@ -2,7 +2,7 @@
 
 blueprint:
   name: "Motion-activated light between dusk/dawn with offset and blocker"
-  description: "Motion-activated light between dusk/dawn (with offsets) only if ambient LUX is low and if not switch off shortly before (version 1.0.2)"
+  description: "Motion-activated light between dusk/dawn (with offsets) only if ambient LUX is low and if not switch off shortly before (version 1.1.0)"
   domain: automation
 
   input:
@@ -17,6 +17,12 @@ blueprint:
       selector:
         entity:
           domain: binary_sensor
+
+    between_dusk_and_dawn_sensor:
+      name: Sensor which indicates if it is between dusk and dawn
+      selector:
+        entity:
+          domain: sensor
 
     light_entity:
       name: Light
@@ -41,30 +47,6 @@ blueprint:
           step: 1
           unit_of_measurement: lx
 
-    offset_dusk:
-      name: Dusk Offset
-      default: 0
-      selector:
-        number:
-          min: -120
-          max: 120
-          step: 15
-          unit_of_measurement: min
-
-    offset_dawn:
-      name: Dawn Offset
-      default: 0
-      selector:
-        number:
-          min: -120
-          max: 120
-          step: 15
-          unit_of_measurement: min
-
-
-variables:
-  dusk_offset: !input offset_dusk
-  dawn_offset: !input offset_dawn
 
 trigger:
   - platform: state
@@ -72,11 +54,9 @@ trigger:
     to: "on"
 
 condition:
-  - condition: template
-    value_template: >
-      {% set dusk = as_timestamp(state_attr('sun.sun', 'next_setting')) + (dusk_offset | int) * 60 %}
-      {% set dawn = as_timestamp(state_attr('sun.sun', 'next_rising')) + (dawn_offset | int) * 60 %}
-      {{ now().timestamp() >= dusk or now().timestamp() <= dawn }}
+  - condition: state
+    entity_id: !input between_dusk_and_dawn_sensor
+    state: "true"
 
   - condition: numeric_state
     entity_id: !input lux_sensor
