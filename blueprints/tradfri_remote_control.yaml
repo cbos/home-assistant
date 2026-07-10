@@ -1,0 +1,208 @@
+blueprint:
+  name: Controller - IKEA TRADFRI remote control (E1524/E1810) based on Zigbee2MQTT v2.0 events
+  description:
+    Controller automation for the IKEA TRADFRI remote control (E1524/E1810) via Zigbee2MQTT event entities.
+    The toggle button toggles the configured light directly.
+    Click actions run once, hold actions are triggered repeatedly as long as the button is held.
+    Version 1.0.0
+  domain: automation
+  input:
+    switch_event:
+      name: (Zigbee2MQTT) MQTT event type of the remote action
+      description: Example event.remote_livingroom_action.
+      selector:
+        entity:
+          domain: event
+    light_entity:
+      name: Light
+      description: Light which is toggled by the toggle (middle) button.
+      selector:
+        entity:
+          domain: light
+    tick_ms:
+      name: Tick delay
+      description: Each x time the hold action is triggered again as long as the button is held.
+      default: 250
+      selector:
+        number:
+          min: 100.0
+          max: 1000.0
+          unit_of_measurement: milliseconds
+          mode: box
+          step: 10.0
+    brightness_up_pressed:
+      name: Brightness Up Pressed
+      description: Action to run, when the brightness up button is pressed.
+      default: []
+      selector:
+        action: {}
+    brightness_up_held:
+      name: Brightness Up Held
+      description: Action to run, as long as the brightness up button is held. This will be multiple times as long as the button is held.
+      default: []
+      selector:
+        action: {}
+    brightness_down_pressed:
+      name: Brightness Down Pressed
+      description: Action to run, when the brightness down button is pressed.
+      default: []
+      selector:
+        action: {}
+    brightness_down_held:
+      name: Brightness Down Held
+      description: Action to run, as long as the brightness down button is held. This will be multiple times as long as the button is held.
+      default: []
+      selector:
+        action: {}
+    arrow_left_pressed:
+      name: Arrow Left Pressed
+      description: Action to run, when the arrow left button is pressed.
+      default: []
+      selector:
+        action: {}
+    arrow_left_held:
+      name: Arrow Left Held
+      description: Action to run, as long as the arrow left button is held. This will be multiple times as long as the button is held.
+      default: []
+      selector:
+        action: {}
+    arrow_right_pressed:
+      name: Arrow Right Pressed
+      description: Action to run, when the arrow right button is pressed.
+      default: []
+      selector:
+        action: {}
+    arrow_right_held:
+      name: Arrow Right Held
+      description: Action to run, as long as the arrow right button is held. This will be multiple times as long as the button is held.
+      default: []
+      selector:
+        action: {}
+  source_url: https://github.com/cbos/home-assistant/blob/main/blueprints/tradfri_remote_control.yaml
+mode: restart
+max_exceeded: silent
+variables:
+  tick_ms: !input "tick_ms"
+trigger:
+  - trigger: state
+    entity_id: !input 'switch_event'
+    attribute: event_type
+    to: "toggle"
+    id: toggle
+  - trigger: state
+    entity_id: !input 'switch_event'
+    attribute: event_type
+    to: "brightness_up_click"
+    id: brightness_up_click
+  - trigger: state
+    entity_id: !input 'switch_event'
+    attribute: event_type
+    to: "brightness_down_click"
+    id: brightness_down_click
+  - trigger: state
+    entity_id: !input 'switch_event'
+    attribute: event_type
+    to: "arrow_left_click"
+    id: arrow_left_click
+  - trigger: state
+    entity_id: !input 'switch_event'
+    attribute: event_type
+    to: "arrow_right_click"
+    id: arrow_right_click
+  - trigger: state
+    entity_id: !input 'switch_event'
+    attribute: event_type
+    to: "brightness_up_hold"
+    id: brightness_up_hold
+  - trigger: state
+    entity_id: !input 'switch_event'
+    attribute: event_type
+    to: "brightness_down_hold"
+    id: brightness_down_hold
+  - trigger: state
+    entity_id: !input 'switch_event'
+    attribute: event_type
+    to: "arrow_left_hold"
+    id: arrow_left_hold
+  - trigger: state
+    entity_id: !input 'switch_event'
+    attribute: event_type
+    to: "arrow_right_hold"
+    id: arrow_right_hold
+action:
+  - choose:
+      # short presses
+      - conditions:
+          - condition: trigger
+            id: toggle
+        sequence:
+          - service: light.toggle
+            target:
+              entity_id: !input light_entity
+      - conditions:
+          - condition: trigger
+            id: brightness_up_click
+        sequence: !input "brightness_up_pressed"
+      - conditions:
+          - condition: trigger
+            id: brightness_down_click
+        sequence: !input "brightness_down_pressed"
+      - conditions:
+          - condition: trigger
+            id: arrow_left_click
+        sequence: !input "arrow_left_pressed"
+      - conditions:
+          - condition: trigger
+            id: arrow_right_click
+        sequence: !input "arrow_right_pressed"
+
+    default:
+      # long hold: keep stepping until release is observed
+      - repeat:
+          until:
+            - condition: template
+              value_template: "{{ false }}"  # we break via 'wait_for_trigger' below
+          sequence:
+            - choose:
+                - conditions:
+                    - condition: trigger
+                      id: brightness_up_hold
+                  sequence: !input "brightness_up_held"
+                - conditions:
+                    - condition: trigger
+                      id: brightness_down_hold
+                  sequence: !input "brightness_down_held"
+                - conditions:
+                    - condition: trigger
+                      id: arrow_left_hold
+                  sequence: !input "arrow_left_held"
+                - conditions:
+                    - condition: trigger
+                      id: arrow_right_hold
+                  sequence: !input "arrow_right_held"
+
+            - wait_for_trigger:
+                - trigger: state
+                  entity_id: !input 'switch_event'
+                  attribute: event_type
+                  to: "brightness_up_release"
+                - trigger: state
+                  entity_id: !input 'switch_event'
+                  attribute: event_type
+                  to: "brightness_down_release"
+                - trigger: state
+                  entity_id: !input 'switch_event'
+                  attribute: event_type
+                  to: "arrow_left_release"
+                - trigger: state
+                  entity_id: !input 'switch_event'
+                  attribute: event_type
+                  to: "arrow_right_release"
+              timeout:
+                milliseconds: "{{ tick_ms }}"
+              continue_on_timeout: true
+
+            - choose:
+                - conditions: "{{ wait.completed }}"
+                  sequence:
+                    - stop: "released"
